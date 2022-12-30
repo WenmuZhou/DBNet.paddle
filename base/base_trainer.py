@@ -23,10 +23,7 @@ class BaseTrainer:
         self.save_dir = os.path.join(config['trainer']['output_dir'], config['name'])
         self.checkpoint_dir = os.path.join(self.save_dir, 'checkpoint')
 
-        if config['trainer']['resume_checkpoint'] == '' and config['trainer']['finetune_checkpoint'] == '':
-            shutil.rmtree(self.save_dir, ignore_errors=True)
-        if not os.path.exists(self.checkpoint_dir):
-            os.makedirs(self.checkpoint_dir)
+        os.makedirs(self.checkpoint_dir, exist_ok=True)
 
         self.global_step = 0
         self.start_epoch = 0
@@ -98,11 +95,9 @@ class BaseTrainer:
         Full training logic
         """
         for epoch in range(self.start_epoch + 1, self.epochs + 1):
-            if self.config['distributed']:
-                self.train_loader.sampler.set_epoch(epoch)
             self.epoch_result = self._train_epoch(epoch)
             self._on_epoch_finish()
-        if self.config['local_rank'] == 0 and self.tensorboard_enable:
+        if paddle.distributed.get_rank() == 0 and self.visualdl_enable:
             self.writer.close()
         self._on_train_finish()
 
@@ -136,7 +131,7 @@ class BaseTrainer:
         :param log: logging information of the epoch
         :param save_best: if True, rename the saved checkpoint to 'model_best.pth.tar'
         """
-        state_dict = self.model.module.state_dict() if self.config['distributed'] else self.model.state_dict()
+        state_dict = self.model.state_dict()
         state = {
             'epoch': epoch,
             'global_step': self.global_step,

@@ -32,8 +32,7 @@ class EVAL():
         self.validate_loader = get_dataloader(config['dataset']['validate'], config['distributed'])
 
         self.model = build_model(config['arch'])
-        # self.model.set_state_dict(checkpoint['state_dict'])
-        self.model.set_state_dict(paddle.load('1.params')['state_dict'])
+        self.model.set_state_dict(checkpoint['state_dict'])
 
         self.post_process = get_post_processing(config['post_processing'])
         self.metric_cls = get_metric(config['metric'])
