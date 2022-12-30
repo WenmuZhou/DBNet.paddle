@@ -10,3 +10,6 @@ __pycache__/
 output/
 test/*.jpg
 datasets/
+index/
+train_log/
+log/

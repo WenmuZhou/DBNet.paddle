@@ -46,7 +46,7 @@ trainer:
   resume_checkpoint: ''
   finetune_checkpoint: ''
   output_dir: output
-  visual_dl: true
+  visual_dl: false
 dataset:
   train:
     dataset:

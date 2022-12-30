@@ -35,14 +35,26 @@ class Trainer(BaseTrainer):
             cur_batch_size = batch['img'].shape[0]
 
             train_reader_cost += time.time() - reader_start
-            preds = self.model(batch['img'])
-            loss_dict = self.criterion(preds, batch)
-            # backward
-            self.optimizer.clear_grad()
-            loss_dict['loss'].backward()
-            self.optimizer.step()
+            if self.amp:
+                with paddle.amp.auto_cast(
+                    enable= 'gpu' in paddle.device.get_device(),
+                    custom_white_list=self.amp.get('custom_white_list', []),
+                    custom_black_list=self.amp.get('custom_black_list', []),
+                    level=self.amp.get('level', 'O2')):
+                    preds = self.model(batch['img'])
+                loss_dict = self.criterion(preds.astype(paddle.float32), batch)
+                scaled_loss = self.amp['scaler'].scale(loss_dict['loss'])
+                scaled_loss.backward()
+                self.amp['scaler'].minimize(self.optimizer, scaled_loss)
+            else:
+                preds = self.model(batch['img'])
+                loss_dict = self.criterion(preds, batch)
+                # backward
+                loss_dict['loss'].backward()
+                self.optimizer.step()
             self.lr_scheduler.step()
-           
+            self.optimizer.clear_grad()
+            
             train_batch_time = time.time() - reader_start
             train_batch_cost += train_batch_time
             total_samples += cur_batch_size
@@ -67,7 +79,7 @@ class Trainer(BaseTrainer):
 
             if self.global_step % self.log_iter == 0:
                 self.logger_info(
-                    '[{}/{}], [{}/{}], global_step: {}, speed: {:.1f} samples/sec, avg_reader_cost: {:.5f} s, avg_batch_cost: {:.5f} s, avg_samples: {}, acc: {:.4f}, iou_shrink_map: {:.4f}, {}lr:{:.6}, time:{:.2f}'.format(
+                    '[{}/{}], [{}/{}], global_step: {}, ips: {:.1f} samples/sec, avg_reader_cost: {:.5f} s, avg_batch_cost: {:.5f} s, avg_samples: {}, acc: {:.4f}, iou_shrink_map: {:.4f}, {}lr:{:.6}, time:{:.2f}'.format(
                         epoch, self.epochs, i + 1, self.train_loader_len, self.global_step, total_samples / train_batch_cost, train_reader_cost / self.log_iter, train_batch_cost / self.log_iter, total_samples / self.log_iter, acc, 
                         iou_shrink_map, loss_str, lr, train_batch_cost))
                 total_samples = 0
@@ -93,7 +105,16 @@ class Trainer(BaseTrainer):
         for i, batch in tqdm(enumerate(self.validate_loader), total=len(self.validate_loader), desc='test model'):
             with paddle.no_grad():
                 start = time.time()
-                preds = self.model(batch['img'])
+                if self.amp:
+                    with paddle.amp.auto_cast(
+                        enable= 'gpu' in paddle.device.get_device(),
+                        custom_white_list=self.amp.get('custom_white_list', []),
+                        custom_black_list=self.amp.get('custom_black_list', []),
+                        level=self.amp.get('level', 'O2')):
+                        preds = self.model(batch['img'])
+                    preds = preds.astype(paddle.float32)
+                else:
+                    preds = self.model(batch['img'])
                 boxes, scores = self.post_process(batch, preds,is_output_polygon=self.metric_cls.is_output_polygon)
                 total_frame += batch['img'].shape[0]
                 total_time += time.time() - start

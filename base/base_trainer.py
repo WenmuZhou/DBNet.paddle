@@ -20,7 +20,7 @@ class BaseTrainer:
         config['trainer']['output_dir'] = os.path.join(str(pathlib.Path(os.path.abspath(__name__)).parent),
                                                        config['trainer']['output_dir'])
         config['name'] = config['name'] + '_' + model.name
-        self.save_dir = os.path.join(config['trainer']['output_dir'], config['name'])
+        self.save_dir = config['trainer']['output_dir']
         self.checkpoint_dir = os.path.join(self.save_dir, 'checkpoint')
 
         os.makedirs(self.checkpoint_dir, exist_ok=True)
@@ -79,6 +79,19 @@ class BaseTrainer:
         if self.visualdl_enable and paddle.distributed.get_rank() == 0:
             from visualdl import LogWriter
             self.writer = LogWriter(self.save_dir)
+        
+        # 混合精度训练
+        self.amp = self.config.get('amp', None)
+        if self.amp == 'None':
+            self.amp = None
+        if self.amp:
+            self.amp['scaler'] = paddle.amp.GradScaler(
+                init_loss_scaling=self.amp.get("scale_loss", 1024), use_dynamic_loss_scaling=self.amp.get('use_dynamic_loss_scaling', True))
+            self.model, self.optimizer = paddle.amp.decorate(
+                models=self.model,
+                optimizers=self.optimizer,
+                level=self.amp.get('amp_level', 'O2'))
+
         # 分布式训练
         if paddle.device.cuda.device_count() > 1:
             self.model = paddle.DataParallel(self.model)
@@ -90,6 +103,7 @@ class BaseTrainer:
                 self.normalize_std = t['args']['std']
                 self.UN_Normalize = True
 
+      
     def train(self):
         """
         Full training logic

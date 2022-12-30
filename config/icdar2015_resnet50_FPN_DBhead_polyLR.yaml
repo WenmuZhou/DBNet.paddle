@@ -42,9 +42,13 @@ trainer:
   show_images_iter: 50
   resume_checkpoint: ''
   finetune_checkpoint: ''
-  output_dir: output
-  visual_dl: true
-
+  output_dir: output/fp16_o2
+  visual_dl: false
+amp:
+    scale_loss: 1024
+    amp_level: O2
+    custom_white_list: []
+    custom_black_list: ['exp', 'sigmoid', 'concat']
 dataset:
   train:
     dataset:
