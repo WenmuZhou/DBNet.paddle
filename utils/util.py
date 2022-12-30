@@ -314,6 +314,14 @@ class ArgsParser(ArgumentParser):
         self.add_argument("-c", "--config_file", help="configuration file to use")
         self.add_argument(
             "-o", "--opt", nargs='*', help="set configuration options")
+        self.add_argument(
+            '-p',
+            '--profiler_options',
+            type=str,
+            default=None,
+            help='The option of profiler, which should be in format ' \
+                 '\"key1=value1;key2=value2;key3=value3\".'
+        )
 
     def parse_args(self, argv=None):
         args = super(ArgsParser, self).parse_args(argv)

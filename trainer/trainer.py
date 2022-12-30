@@ -7,12 +7,13 @@ import paddle
 from tqdm import tqdm
 
 from base import BaseTrainer
-from utils import runningScore, cal_text_score, Polynomial
+from utils import runningScore, cal_text_score, Polynomial, profiler
 
 
 class Trainer(BaseTrainer):
-    def __init__(self, config, model, criterion, train_loader, validate_loader, metric_cls, post_process=None):
+    def __init__(self, config, model, criterion, train_loader, validate_loader, metric_cls, post_process=None, profiler_options=None):
         super(Trainer, self).__init__(config, model, criterion, train_loader, validate_loader, metric_cls, post_process)
+        self.profiler_options = profiler_options
         
     def _train_epoch(self, epoch):
         self.model.train()
@@ -25,7 +26,7 @@ class Trainer(BaseTrainer):
         running_metric_text = runningScore(2)
 
         for i, batch in enumerate(self.train_loader):
-            
+            profiler.add_profiler_step(self.profiler_options)
             if i >= self.train_loader_len:
                 break
             self.global_step += 1

@@ -17,7 +17,7 @@ def init_args():
     return args
 
 
-def main(config):
+def main(config, profiler_options):
     from models import build_model, build_loss
     from data_loader import get_dataloader
     from trainer import Trainer
@@ -43,7 +43,7 @@ def main(config):
     metric = get_metric(config['metric'])
     trainer = Trainer(config=config, model=model, criterion=criterion,
         train_loader=train_loader, post_process=post_p, metric_cls=metric,
-        validate_loader=validate_loader)
+        validate_loader=validate_loader, profiler_options=profiler_options)
     trainer.train()
 
 
@@ -52,4 +52,4 @@ if __name__ == '__main__':
     assert os.path.exists(args.config_file)
     config = Config(args.config_file)
     config.merge_dict(args.opt)
-    main(config.cfg)
+    main(config.cfg, args.profiler_options)
