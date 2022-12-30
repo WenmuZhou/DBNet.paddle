@@ -100,7 +100,7 @@ only train on ICDAR2015 dataset
 
 | Method                   | image size (short size) |learning rate | Precision (%) | Recall (%) | F-measure (%) | FPS |
 |:--------------------------:|:-------:|:--------:|:--------:|:------------:|:---------------:|:-----:|
-| ImageNet-resnet50-FPN-DBHead（torch）  |736 |1e-3|90.19 | 78.14 | 3.88 | 27 |
+| ImageNet-resnet50-FPN-DBHead（torch）  |736 |1e-3|90.19 | 78.14 | 83.88 | 27 |
 | ImageNet-resnet50-FPN-DBHead（paddle）  |736 |1e-3| 89.15 | 78.83 | 83.68 | 27 |
 
 
