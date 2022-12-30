@@ -44,6 +44,7 @@ trainer:
   finetune_checkpoint: ''
   output_dir: output
   visual_dl: true
+
 dataset:
   train:
     dataset:

@@ -95,6 +95,5 @@ def get_dataloader(module_config, distributed=False):
             dataset=_dataset,
             batch_size=config['loader'].pop('batch_size'),
             shuffle=config['loader'].pop('shuffle'))
-    config['loader'].pop('pin_memory')
     loader = DataLoader(dataset=_dataset, batch_sampler=batch_sampler, **config['loader'])
     return loader

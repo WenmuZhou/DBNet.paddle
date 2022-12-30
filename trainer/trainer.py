@@ -66,14 +66,14 @@ class Trainer(BaseTrainer):
 
             if self.global_step % self.log_iter == 0:
                 self.logger_info(
-                    '[{}/{}], [{}/{}], global_step: {}, speed: {:.1f} samples/sec, avg_reader_cost: {:.5f} s, avg_batch_cost: {:.5f} s, avg_samples: {}, acc: {:.4f}, iou_shrink_map: {:.4f}, {}, lr:{:.6}, time:{:.2f}'.format(
+                    '[{}/{}], [{}/{}], global_step: {}, speed: {:.1f} samples/sec, avg_reader_cost: {:.5f} s, avg_batch_cost: {:.5f} s, avg_samples: {}, acc: {:.4f}, iou_shrink_map: {:.4f}, {}lr:{:.6}, time:{:.2f}'.format(
                         epoch, self.epochs, i + 1, self.train_loader_len, self.global_step, total_samples / train_batch_cost, train_reader_cost / self.log_iter, train_batch_cost / self.log_iter, total_samples / self.log_iter, acc, 
                         iou_shrink_map, loss_str, lr, train_batch_cost))
                 total_samples = 0
                 train_reader_cost = 0.0
                 train_batch_cost = 0.0
 
-            if self.visualdl_enable and self.config['local_rank'] == 0:
+            if self.visualdl_enable and paddle.distributed.get_rank() == 0:
                 # write tensorboard
                 for key, value in loss_dict.items():
                     self.writer.add_scalar('TRAIN/LOSS/{}'.format(key), value, self.global_step)
@@ -109,7 +109,7 @@ class Trainer(BaseTrainer):
         net_save_path = '{}/model_latest.pth'.format(self.checkpoint_dir)
         net_save_path_best = '{}/model_best.pth'.format(self.checkpoint_dir)
 
-        if self.config['local_rank'] == 0:
+        if paddle.distributed.get_rank()== 0:
             self._save_checkpoint(self.epoch_result['epoch'], net_save_path)
             save_best = False
             if self.validate_loader is not None and self.metric_cls is not None:  # 使用f1作为最优模型指标

@@ -37,7 +37,7 @@ class BaseTrainer:
         self.visualdl_enable = self.config['trainer'].get('visual_dl', False)
         self.epochs = self.config['trainer']['epochs']
         self.log_iter = self.config['trainer']['log_iter']
-        if config['local_rank'] == 0:
+        if paddle.distributed.get_rank() == 0:
             anyconfig.dump(config, os.path.join(self.save_dir, 'config.yaml'))
             self.logger = setup_logger(os.path.join(self.save_dir, 'train.log'))
             self.logger_info(pformat(self.config))
@@ -79,7 +79,7 @@ class BaseTrainer:
         elif self.config['trainer']['finetune_checkpoint'] != '':
             self._load_checkpoint(self.config['trainer']['finetune_checkpoint'], resume=False)
 
-        if self.visualdl_enable and config['local_rank'] == 0:
+        if self.visualdl_enable and paddle.distributed.get_rank() == 0:
             from visualdl import LogWriter
             self.writer = LogWriter(self.save_dir)
         # 分布式训练
@@ -188,5 +188,5 @@ class BaseTrainer:
             batch_img[:, 2, :, :] = batch_img[:, 2, :, :] * self.normalize_std[2] + self.normalize_mean[2]
 
     def logger_info(self, s):
-        if self.config['local_rank'] == 0:
+        if paddle.distributed.get_rank() == 0:
             self.logger.info(s)

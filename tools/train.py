@@ -1,16 +1,18 @@
+import os
+import sys
+import pathlib
+__dir__ = pathlib.Path(os.path.abspath(__file__))
+sys.path.append(str(__dir__))
+sys.path.append(str(__dir__.parent.parent))
+
 import paddle
 import paddle.distributed as dist
-import argparse
-import os
-import anyconfig
+
+from utils import Config, ArgsParser
 
 
 def init_args():
-    parser = argparse.ArgumentParser(description='DBNet.paddle')
-    parser.add_argument('--config_file', default=
-        'config/open_dataset_resnet18_FPN_DBhead_polyLR.yaml', type=str)
-    parser.add_argument('--local_rank', dest='local_rank', default=0, type=
-        int, help='Use distributed training')
+    parser = ArgsParser()
     args = parser.parse_args()
     return args
 
@@ -26,7 +28,6 @@ def main(config):
         config['distributed'] = True
     else:
         config['distributed'] = False
-    config['local_rank'] = args.local_rank
     train_loader = get_dataloader(config['dataset']['train'], config[
         'distributed'])
     assert train_loader is not None
@@ -47,15 +48,8 @@ def main(config):
 
 
 if __name__ == '__main__':
-    import sys
-    import pathlib
-    __dir__ = pathlib.Path(os.path.abspath(__file__))
-    sys.path.append(str(__dir__))
-    sys.path.append(str(__dir__.parent.parent))
-    from utils import parse_config
     args = init_args()
     assert os.path.exists(args.config_file)
-    config = anyconfig.load(open(args.config_file, 'rb'))
-    if 'base' in config:
-        config = parse_config(config)
-    main(config)
+    config = Config(args.config_file)
+    config.merge_dict(args.opt)
+    main(config.cfg)
