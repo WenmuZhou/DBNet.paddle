@@ -47,6 +47,11 @@ trainer:
   finetune_checkpoint: ''
   output_dir: output
   visual_dl: false
+amp:
+    scale_loss: 1024
+    amp_level: O2
+    custom_white_list: []
+    custom_black_list: ['exp', 'sigmoid', 'concat']
 dataset:
   train:
     dataset:

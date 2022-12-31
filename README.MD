@@ -102,6 +102,7 @@ only train on ICDAR2015 dataset
 |:--------------------------:|:-------:|:--------:|:--------:|:------------:|:---------------:|:-----:|
 | ImageNet-resnet50-FPN-DBHead（torch）  |736 |1e-3|90.19 | 78.14 | 83.88 | 27 |
 | ImageNet-resnet50-FPN-DBHead（paddle）  |736 |1e-3| 89.47 | 79.03 | 83.92 | 27 |
+| ImageNet-resnet50-FPN-DBHead（paddle_amp）  |736 |1e-3| 88.62 | 79.95 | 84.06 | 27 |
 
 
 ### examples
