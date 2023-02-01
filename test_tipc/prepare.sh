@@ -20,7 +20,20 @@ model_name=$(func_parser_value "${lines[1]}")
 
 trainer_list=$(func_parser_value "${lines[14]}")
 
-if [ ${MODE} = "benchmark_train" ];then
+if [ ${MODE} = "lite_train_lite_infer" ];then
+    python_name_list=$(func_parser_value "${lines[2]}")
+    array=(${python_name_list}) 
+    python_name=${array[0]}
+    ${python_name} -m pip install -r requirements.txt
+    if [[ ${model_name} =~ "det_res50_db" ]];then
+        wget https://paddle-wheel.bj.bcebos.com/benchmark/resnet50-19c8e357.pth -O /root/.cache/torch/hub/checkpoints/resnet50-19c8e357.pth
+
+        # 下载数据集并解压
+        rm -rf datasets
+        wget -nc https://paddleocr.bj.bcebos.com/dygraph_v2.0/test/benchmark_train/datasets.tar
+        tar xf datasets.tar
+    fi
+elif [ ${MODE} = "benchmark_train" ];then
     python_name_list=$(func_parser_value "${lines[2]}")
     array=(${python_name_list}) 
     python_name=${array[0]}

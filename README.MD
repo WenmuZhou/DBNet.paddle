@@ -91,7 +91,23 @@ You can change the `model_path` in the `predict.sh` file to your model location.
 
 tips: if result is not good, you can change `thre` in [predict.sh](predict.sh) 
     
-The project is still under development.
+## Export Model
+
+[export_model.py](tools/export_model.py) Can be used to inference on all images in a folder
+
+use following script to export inference model
+```
+python tools/export_model.py --config_file config/icdar2015_resnet50_FPN_DBhead_polyLR.yaml -o trainer.resume_checkpoint=model_best.pth trainer.output_dir=output/infer
+```
+
+## Paddle Inference infer
+
+[infer.py](tools/infer.py) Can be used to inference on all images in a folder
+
+use following script to export inference model
+```
+python tools/infer.py --model-dir=output/infer/ --img-path imgs/paper/db.jpg 
+```
 
 <h2 id="Performance">Performance</h2>
 

@@ -14,6 +14,7 @@ class Trainer(BaseTrainer):
     def __init__(self, config, model, criterion, train_loader, validate_loader, metric_cls, post_process=None, profiler_options=None):
         super(Trainer, self).__init__(config, model, criterion, train_loader, validate_loader, metric_cls, post_process)
         self.profiler_options = profiler_options
+        self.enable_eval = config['trainer'].get('enable_eval', True)
         
     def _train_epoch(self, epoch):
         self.model.train()
@@ -134,7 +135,7 @@ class Trainer(BaseTrainer):
         if paddle.distributed.get_rank()== 0:
             self._save_checkpoint(self.epoch_result['epoch'], net_save_path)
             save_best = False
-            if self.validate_loader is not None and self.metric_cls is not None:  # 使用f1作为最优模型指标
+            if self.validate_loader is not None and self.metric_cls is not None and self.enable_eval:  # 使用f1作为最优模型指标
                 recall, precision, hmean = self._eval(self.epoch_result['epoch'])
 
                 if self.visualdl_enable:
@@ -168,8 +169,9 @@ class Trainer(BaseTrainer):
 
 
     def _on_train_finish(self):
-        for k, v in self.metrics.items():
-            self.logger_info('{}:{}'.format(k, v))
+        if self.enable_eval:
+            for k, v in self.metrics.items():
+                self.logger_info('{}:{}'.format(k, v))
         self.logger_info('finish train')
 
     def _initialize_scheduler(self):
